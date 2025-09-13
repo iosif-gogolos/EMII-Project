@@ -48,7 +48,7 @@ Amershi, S., Weld, D. S., Vorvoreanu, M., Fourney, A., Nushi, B., Collisson, P.,
 
 ```bash
 # (Recommended) Python 3.10–3.12 virtual env
-pip install -r requirements-xai.txt   # includes everything
+pip install -r requirements.txt   # includes everything for training and XAI
 ```
 
 ## Run
