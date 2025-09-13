@@ -46,6 +46,13 @@ Amershi, S., Weld, D. S., Vorvoreanu, M., Fourney, A., Nushi, B., Collisson, P.,
 
 ---
 
+## Training activity
+
+![XAI Program applying GradCAM to glioma](./docs/uml/training_activity.png)
+
+
+---
+
 ## Install
 
 ```bash
