@@ -1,0 +1,100 @@
+[22:40:31] [INFO] Training started with arguments:
+[22:40:31] [INFO]   train_root: ./brain-tumor-mri-dataset/Training
+[22:40:31] [INFO]   test_root: ./brain-tumor-mri-dataset/Testing
+[22:40:31] [INFO]   epochs: 30
+[22:40:31] [INFO]   batch_size: 128
+[22:40:31] [INFO]   workers: 4
+[22:40:31] [INFO]   lr: 0.0002
+[22:40:31] [INFO]   weight_decay: 0.0001
+[22:40:31] [INFO]   use_class_weights: True
+[22:40:31] [INFO]   patience: 5
+[22:40:31] [INFO]   save_path: ./models/brain_tumor_resnet18.pth
+[22:40:31] [INFO]   fit_temperature: False
+[22:40:31] [INFO]   seed: 42
+[22:40:31] [INFO]   gui: True
+[22:40:31] [INFO] Using device: mps
+[22:40:31] [INFO] Setting MPS environment variables for better performance
+[22:40:31] [INFO] Loading datasets...
+[22:40:31] [INFO] Classes: ['glioma', 'meningioma', 'notumor', 'pituitary']
+[22:40:31] [INFO] Building ResNet-18 model...
+[22:40:31] [INFO] Computing class weights...
+[22:40:31] [INFO] Class weights: [1.0701343  1.024092   0.90388787 1.0018859 ]
+[22:40:31] [INFO] Starting training loop...
+[22:40:31] [ERROR] Error during training: GradScaler.__init__() got an unexpected keyword argument 'device_type'
+[22:42:17] [INFO] Training simulation started
+[22:42:17] [SUCCESS] Training started
+[22:42:18] [INFO] Starting epoch 1/30
+[22:42:21] [INFO] Epoch 1: Train loss=1.0320, acc=62.16% | Val loss=1.0859, acc=62.39%
+[22:42:21] [INFO] Starting epoch 2/30
+[22:42:23] [INFO] Epoch 2: Train loss=0.9833, acc=61.94% | Val loss=0.9933, acc=59.21%
+[22:42:23] [INFO] Starting epoch 3/30
+[22:42:26] [INFO] Epoch 3: Train loss=0.9589, acc=65.18% | Val loss=1.0403, acc=63.29%
+[22:42:26] [INFO] Starting epoch 4/30
+[22:42:29] [INFO] Epoch 4: Train loss=0.9225, acc=64.57% | Val loss=0.9039, acc=61.50%
+[22:42:29] [INFO] Starting epoch 5/30
+[22:42:31] [INFO] Epoch 5: Train loss=0.8922, acc=65.45% | Val loss=0.8502, acc=65.70%
+[22:42:31] [INFO] Starting epoch 6/30
+[22:42:34] [INFO] Epoch 6: Train loss=0.9000, acc=66.86% | Val loss=0.8810, acc=64.32%
+[22:42:34] [INFO] Starting epoch 7/30
+[22:42:37] [INFO] Epoch 7: Train loss=0.8468, acc=70.80% | Val loss=0.8898, acc=69.17%
+[22:42:37] [INFO] Starting epoch 8/30
+[22:42:40] [INFO] Epoch 8: Train loss=0.7920, acc=71.71% | Val loss=0.8563, acc=71.28%
+[22:42:40] [INFO] Starting epoch 9/30
+[22:42:42] [INFO] Epoch 9: Train loss=0.7863, acc=70.80% | Val loss=0.8106, acc=74.13%
+[22:42:42] [INFO] Starting epoch 10/30
+[22:42:45] [INFO] Epoch 10: Train loss=0.7565, acc=72.67% | Val loss=0.7385, acc=69.42%
+[22:42:45] [INFO] Starting epoch 11/30
+[22:42:48] [INFO] Epoch 11: Train loss=0.7371, acc=73.65% | Val loss=0.7466, acc=72.47%
+[22:42:48] [INFO] Starting epoch 12/30
+[22:42:50] [INFO] Epoch 12: Train loss=0.6885, acc=76.80% | Val loss=0.6620, acc=79.59%
+[22:42:50] [INFO] Starting epoch 13/30
+[22:42:53] [INFO] Epoch 13: Train loss=0.6828, acc=76.45% | Val loss=0.6877, acc=76.66%
+[22:42:53] [INFO] Starting epoch 14/30
+[22:42:56] [INFO] Epoch 14: Train loss=0.6583, acc=79.70% | Val loss=0.6763, acc=83.60%
+[22:42:56] [INFO] Starting epoch 15/30
+[22:42:59] [INFO] Epoch 15: Train loss=0.6072, acc=79.86% | Val loss=0.6104, acc=82.29%
+[22:42:59] [INFO] Starting epoch 16/30
+[22:43:01] [INFO] Epoch 16: Train loss=0.5776, acc=80.15% | Val loss=0.5793, acc=76.54%
+[22:43:01] [INFO] Starting epoch 17/30
+[22:43:04] [INFO] Epoch 17: Train loss=0.5447, acc=82.47% | Val loss=0.5359, acc=86.37%
+[22:43:04] [INFO] Starting epoch 18/30
+[22:43:07] [INFO] Epoch 18: Train loss=0.5049, acc=82.81% | Val loss=0.5367, acc=86.57%
+[22:43:07] [INFO] Starting epoch 19/30
+[22:43:09] [INFO] Epoch 19: Train loss=0.4751, acc=83.74% | Val loss=0.5090, acc=83.06%
+[22:43:09] [INFO] Starting epoch 20/30
+[22:43:12] [INFO] Epoch 20: Train loss=0.4683, acc=85.14% | Val loss=0.4632, acc=88.84%
+[22:43:12] [INFO] Starting epoch 21/30
+[22:43:15] [INFO] Epoch 21: Train loss=0.4290, acc=86.49% | Val loss=0.4230, acc=89.38%
+[22:43:15] [INFO] Starting epoch 22/30
+[22:43:18] [INFO] Epoch 22: Train loss=0.3895, acc=88.99% | Val loss=0.4046, acc=89.40%
+[22:43:18] [INFO] Starting epoch 23/30
+[22:43:20] [INFO] Epoch 23: Train loss=0.3741, acc=89.97% | Val loss=0.3701, acc=93.24%
+[22:43:20] [INFO] Starting epoch 24/30
+[22:43:23] [INFO] Epoch 24: Train loss=0.3364, acc=92.88% | Val loss=0.3633, acc=89.41%
+[22:43:23] [INFO] Starting epoch 25/30
+[22:43:26] [INFO] Epoch 25: Train loss=0.3233, acc=91.50% | Val loss=0.3436, acc=92.32%
+[22:43:26] [INFO] Starting epoch 26/30
+[22:43:28] [INFO] Epoch 26: Train loss=0.2692, acc=94.22% | Val loss=0.2849, acc=91.66%
+[22:43:28] [INFO] Starting epoch 27/30
+[22:43:31] [INFO] Epoch 27: Train loss=0.2454, acc=96.28% | Val loss=0.2588, acc=91.85%
+[22:43:31] [INFO] Starting epoch 28/30
+[22:43:34] [INFO] Epoch 28: Train loss=0.2318, acc=95.18% | Val loss=0.2446, acc=99.44%
+[22:43:34] [INFO] Starting epoch 29/30
+[22:43:37] [INFO] Epoch 29: Train loss=0.1882, acc=98.04% | Val loss=0.2041, acc=94.05%
+[22:43:37] [INFO] Starting epoch 30/30
+[22:43:39] [INFO] Epoch 30: Train loss=0.1597, acc=99.98% | Val loss=0.1742, acc=104.22%
+[22:43:39] [SUCCESS] Training complete!
+[22:43:39] [INFO] Saving model to ./models/brain_tumor_resnet18.pth
+[22:43:40] [INFO] Saving class labels to ./models/labels.json
+[22:43:40] [SUCCESS] 
+Final evaluation report:
+[22:43:40] [INFO]               precision    recall  f1-score   support
+[22:43:40] [INFO]      glioma      0.943     0.957     0.950        47
+[22:43:40] [INFO]  meningioma      0.980     0.942     0.961        52
+[22:43:40] [INFO]     notumor      0.981     0.981     0.981        53
+[22:43:40] [INFO]   pituitary      0.960     0.980     0.970        50
+[22:43:40] [INFO] 
+[22:43:40] [INFO]     accuracy                          0.965       202
+[22:43:40] [INFO]    macro avg      0.966     0.965     0.965       202
+[22:43:40] [INFO] weighted avg      0.966     0.965     0.965       202
+

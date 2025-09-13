@@ -1,0 +1,4 @@
+file=Te-gl_0018.jpg
+prediction=None
+probs=
+method=Grad-CAM

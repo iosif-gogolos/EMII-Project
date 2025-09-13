@@ -1,0 +1,2 @@
+file=Te-glTr_0005.jpg
+prediction=glioma
