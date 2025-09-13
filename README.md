@@ -33,7 +33,7 @@ Testing/
   pituitary/
 ```
 
-### APA citation for thesis
+### Reference of Dataset
 Nickparvar, M. (2021). *Brain Tumor MRI Dataset* [Data set]. Kaggle. https://www.kaggle.com/datasets/masoudnickparvar/brain-tumor-mri-dataset
 
 ### Optional inspiration (modeling)
