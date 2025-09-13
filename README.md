@@ -61,6 +61,10 @@ pip install -r requirements.txt   # includes everything for training and XAI
                    --use-class-weights --gui
 ```
 
+### Example: Training Program Screenshot
+
+![Training Program Running](./docs/screenshots/training.png)
+
 ```bash
 # Control (prediction-only)
 python EMII_brain_tumor_MRI_Scanner_Control.py
