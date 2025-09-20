@@ -1,5 +1,4 @@
 venv/
-brain-tumor-mri-dataset/
 logs/
 __pycache__
 *.pyc
@@ -7,3 +6,4 @@ reports/
 feedback/
 models/
 Archive/
+brain-tumor-mri-dataset/

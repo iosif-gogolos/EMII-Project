@@ -244,11 +244,16 @@ class EMIIXAI(ctk.CTk):
         self.xai_menu.configure(command=lambda _: self._update_xai_note())
 
     def _update_capability_banner(self):
+        """Honest assessment of what this prototype actually does"""
         self.capability_label.configure(
-            text=("What it can do: classify single MRI images into 4 categories: "
-                  "glioma, meningioma, notumor, pituitary. Shows a confidence estimate and an explanation.\n"
-                  "How well: performance depends on your trained model; treat outputs as assistive.")
+            text=("PROTOTYPE TOOL - RESEARCH ONLY\n"
+                "What it does: ResNet18 brain MRI classification (4 classes) with explanation overlays.\n"
+                "Limitations: Single images only. Explanations are approximations, not ground truth. "
+                "Not validated for clinical use. Grad-CAM uses Captum fallback. "
+                "SHAP/LIME may show synthetic patterns when libraries unavailable.\n"
+                "Use: Educational demonstration of XAI concepts in medical imaging context.")
         )
+
 
     def _update_xai_note(self):
         method = self.xai_var.get()
@@ -360,9 +365,10 @@ class EMIIXAI(ctk.CTk):
 
     # Inference + XAI
     def on_predict(self):
-        if self.current_image is None:
+        if not self.files:
             messagebox.showinfo("No image", "Open an image first.")
             return
+            
         self.btn_run.configure(state="disabled", text="Running…")
         threading.Thread(target=self._run_all, daemon=True).start()
 
@@ -405,11 +411,21 @@ class EMIIXAI(ctk.CTk):
 
     def _run_all(self):
         """Run the selected XAI method"""
-        if not self.files:
-            messagebox.showinfo("No image", "Open an image first.")
-            return
-            
         try:
+            # First check if we have files loaded
+            if not self.files:
+                messagebox.showinfo("No image", "Open an image first.")
+                return
+                
+            # Then check if current image is loaded properly
+            if self.current_image is None:
+                # Try to load the first image if it wasn't loaded
+                try:
+                    self.load_image(self.files[self.idx])
+                except Exception as e:
+                    messagebox.showerror("Image loading error", f"Failed to load image: {e}")
+                    return
+                    
             # Prepare input and get prediction
             img_tensor = self._prep_input(self.current_image)
             
@@ -448,6 +464,9 @@ class EMIIXAI(ctk.CTk):
         except Exception as e:
             error_msg = str(e)
             messagebox.showerror("Explain error", error_msg)
+        finally:
+            # Make sure the button is re-enabled
+            self.after(0, lambda: self.btn_run.configure(state="normal", text="Predict + Explain"))
 
     def _explain_gradcam(self, inp, target_idx):
         # inp: shape [1,3,224,224] on self.device
@@ -584,7 +603,12 @@ class EMIIXAI(ctk.CTk):
             fallback = np.exp(-((x - center_x)**2 + (y - center_y)**2) / (2 * 50**2))
             return fallback
 
-    def _build_overlay(self, heat_224):
+    def _build_overlay(self, heat_224, method_note=""):
+        """Build overlay image combining original image with heatmap"""
+        
+        from PIL import ImageDraw, ImageFont
+        import matplotlib.pyplot as plt
+        
         if self.current_image is None:
             return
             
@@ -592,76 +616,75 @@ class EMIIXAI(ctk.CTk):
             # Ensure base image is right size
             base = self.current_image.resize((224, 224), Image.BILINEAR)
             
-            # Handle heat map processing
-            h = heat_224
-            if isinstance(h, torch.Tensor):
-                h = h.detach().cpu().numpy()
+            # Process heatmap safely
+            if isinstance(heat_224, torch.Tensor):
+                heat = heat_224.detach().cpu().numpy()
+            else:
+                heat = np.array(heat_224)
                     
-            # Convert to 2D if needed
-            if h.ndim > 2:
-                h = np.mean(h, axis=0)
-                    
+            # Ensure 2D and normalize
+            if heat.ndim > 2:
+                heat = np.mean(heat, axis=0)
+            
             # Safe normalization
-            h_min, h_max = np.nanmin(h), np.nanmax(h)
+            h_min, h_max = np.nanmin(heat), np.nanmax(heat)
             if h_max > h_min:
-                h = np.clip((h - h_min) / (h_max - h_min), 0, 1)
+                heat = np.clip((heat - h_min) / (h_max - h_min), 0, 1)
             else:
-                h = np.zeros_like(h)
-                    
+                heat = np.zeros_like(heat)
+                
             # Replace NaNs with zeros
-            h = np.nan_to_num(h)
-            
-            # FIXED: Create heatmap coloring without dimension issues
-            cm = plt.cm.jet
-            h_colored = np.uint8(cm(h)[:,:,:3] * 255)  # Explicitly control dimensions
-            h_colored_img = Image.fromarray(h_colored)
-            
-            # Manual blending to avoid overflow issues
-            alpha = float(self.sld_overlay.get())
+            heat = np.nan_to_num(heat)
+
+            # Create colored overlay
+            cmap = plt.cm.jet
+            colored = cmap(heat)[:,:,:3]  # RGB only
+            overlay = Image.fromarray((colored * 255).astype(np.uint8))
+
+            # Blend with alpha
+            alpha = self.sld_overlay.get()
             base_np = np.array(base).astype(float)
-            h_np = np.array(h_colored_img).astype(float)
+            overlay_np = np.array(overlay).astype(float)
+            result = np.clip(base_np * (1-alpha) + overlay_np * alpha, 0, 255).astype(np.uint8)
+
+            # Add text and resize for display
+            result_img = Image.fromarray(result).resize((600, 600), Image.LANCZOS if hasattr(Image, 'LANCZOS') else Image.BICUBIC)
+            draw = ImageDraw.Draw(result_img)
             
-            # Make sure dimensions match
-            if base_np.ndim == 3 and h_np.ndim == 3:
-                blended = np.clip(base_np * (1-alpha) + h_np * alpha, 0, 255).astype(np.uint8)
-                result = Image.fromarray(blended)
-            else:
-                # Fallback if dimensions don't match
-                result = base
-                
-            # Resize for display
-            result = result.resize((600, 600), Image.LANCZOS if hasattr(Image, 'LANCZOS') else Image.BICUBIC)
-            
-            # Add text overlay
-            from PIL import ImageDraw, ImageFont
-            draw = ImageDraw.Draw(result)
             try:
                 font = ImageFont.truetype("arial.ttf", 18)
             except Exception:
                 font = ImageFont.load_default()
-                    
-            # Add explanatory text
-            method = self.xai_var.get()
-            hdr = f"Why: {method} region importance for {self.prediction or '-'}"
-            draw.rectangle([10, 10, 590, 50], fill=(255, 255, 255, 220))
-            draw.text((14, 14), hdr, fill=(0, 0, 0), font=font)
-                
-            self.overlay_image = result
+
+            text = f"{self.xai_var.get()}: {self.prediction or 'analyzing...'}"
+            if method_note:
+                text = f"{method_note}: {self.prediction or 'analyzing'}"
+
+            draw.rectangle([10, 10, 590, 40], fill=(255,255,255,200))
+            draw.text((14, 16), text, fill=(0,0,0), font=font)
+
+            self.overlay_image = result_img
             self._render_overlay()
-            
+        
         except Exception as e:
-            print(f"Overlay error: {str(e)}")
-            # Create a simple error message overlay
-            base = self.current_image.resize((600, 600), Image.BILINEAR)
-            draw = ImageDraw.Draw(base)
+            print(f"Overlay error: {e}")
             try:
-                font = ImageFont.truetype("arial.ttf", 18)
-            except Exception:
-                font = ImageFont.load_default()
-            draw.rectangle([10, 10, 590, 50], fill=(255, 0, 0, 220))
-            draw.text((14, 14), f"Error generating {self.xai_var.get()}: {str(e)}", fill=(255, 255, 255), font=font)
-            self.overlay_image = base
-            self._render_overlay()
+                # Simple error visualization
+                error_img = self.current_image.resize((600, 600), Image.LANCZOS if hasattr(Image, 'LANCZOS') else Image.BICUBIC)
+                draw = ImageDraw.Draw(error_img)
+                try:
+                    font = ImageFont.truetype("arial.ttf", 18)
+                except Exception:
+                    font = ImageFont.load_default()
+                    
+                draw.rectangle([10, 10, 590, 40], fill=(255, 50, 50, 200))
+                draw.text((14, 16), f"Visualization error: {str(e)[:50]}", fill=(255, 255, 255), font=font)
+                
+                self.overlay_image = error_img
+                self._render_overlay()
+            except Exception as e2:
+                # Last resort: just print the error
+                print(f"Failed to create error overlay: {e2}")
 
     def show_progress_dialog(self, title, message):
         """Create a non-blocking progress dialog"""
@@ -713,54 +736,18 @@ class EMIIXAI(ctk.CTk):
         
         def process():
             try:
-                # Create a realistic-looking SHAP-like visualization
-                img = self.current_image.resize((224, 224), Image.BILINEAR)
-                img_np = np.array(img)
+                if shap is None:
+                    #Create a medically-informed synthetic explanation
+                    heat = self._create_medical_attention_map(target_idx)
+                    method_note = "Synthetic attention map (SHAP unavailable)"
+                else:
+                    # Real SHAP Implementation
+                    heat = self._explain_shap(tensor, target_idx)
+                    method_note = "SHAP attribution map"
                 
-                # Extract features relevant to each class
-                heat = np.zeros((224, 224), dtype=float)
+                # Update UI with clear labeling
+                self.after(0, lambda: self._build_overlay(heat, method_note))
                 
-                # Create class-specific heatmaps
-                if target_idx == 0:  # glioma
-                    # Gliomas often show contrast enhancement
-                    gray = cv2.cvtColor(img_np, cv2.COLOR_RGB2GRAY)
-                    clahe = cv2.createCLAHE(clipLimit=3.0, tileGridSize=(8,8))
-                    enhanced = clahe.apply(gray)
-                    heat = np.abs(enhanced.astype(float) - gray.astype(float))
-                    
-                    # Focus on upper brain region
-                    y, x = np.indices(heat.shape)
-                    weight = np.exp(-(y - heat.shape[0]*0.4)**2 / (2*50**2))
-                    heat *= weight
-                    
-                elif target_idx == 1:  # meningioma
-                    # Meningiomas often appear at brain boundaries
-                    gray = cv2.cvtColor(img_np, cv2.COLOR_RGB2GRAY)
-                    edges = cv2.Canny(gray, 50, 150)
-                    heat = cv2.GaussianBlur(edges.astype(float), (5, 5), 0)
-                    
-                elif target_idx == 2:  # notumor
-                    # For no tumor, highlight normal brain tissue uniformly
-                    gray = cv2.cvtColor(img_np, cv2.COLOR_RGB2GRAY)
-                    _, binary = cv2.threshold(gray, 30, 255, cv2.THRESH_BINARY)
-                    heat = cv2.GaussianBlur(binary.astype(float), (25, 25), 0)
-                    
-                else:  # pituitary
-                    # Pituitary tumors appear in lower central region
-                    gray = cv2.cvtColor(img_np, cv2.COLOR_RGB2GRAY)
-                    blur = cv2.GaussianBlur(gray, (5, 5), 0)
-                    # Create a gradient focused on lower central area
-                    y, x = np.indices(heat.shape)
-                    cy, cx = int(heat.shape[0] * 0.7), heat.shape[1] // 2
-                    dist = np.sqrt((x - cx)**2 + (y - cy)**2)
-                    heat = np.exp(-dist**2 / (2*30**2))
-                
-                # Normalize
-                if heat.max() > 0:
-                    heat = heat / heat.max()
-                
-                # Update UI
-                self.after(0, lambda: self._build_overlay(heat))
                 
             except Exception as e:
                 error_msg = str(e)
@@ -769,6 +756,35 @@ class EMIIXAI(ctk.CTk):
                 self.after(0, lambda: progress_dialog.destroy())
         
         threading.Thread(target=process, daemon=True).start()
+    
+    def _create_medical_attention_map(self, target_idx):
+        """Creates medically-informed synthetic attention for PoC"""
+        img = self.current_image.resize((224, 224), Image.BILINEAR)
+        img_np = np.array(img)
+        gray = cv2.cvtColor(img_np, cv2.COLOR_RBG2GRAY)
+
+        # Simple brain tissue detection
+        _, brain_mask = cv2.theshold(gray, 30, 255, cv2.THRESH_BINARY)
+
+        # Class-specific attention patterns
+        if target_idx == 0:
+            #glioma: focus on contrast changes
+            heat = cv2.adaptiveTheshold(gray, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 11, 2)
+        elif target_idx == 1:
+            # meningioma - focus on edges
+            heat = cv2.Canny(gray, 50, 150)
+        elif target_idx == 2:
+            # no tumor - uniform brain tissue
+            heat = brain_mask
+        else:
+            # pituary: central lower region
+            y, x = np.indices(gray.shape)
+            cy, cx = int(gray.shape[0] * 0.7), gray.shape[1] // 2
+            heat = np.exp(-((x - cx)**2 +(y- cy)**2)/(2*30**2)) * 255
+
+        # normalize and apply brain mask
+        heat = (heat.astype(float) / 255.0) * (brain_mask > 0)
+        return heat
     
     def _run_lime(self):
         # Show progress dialog
